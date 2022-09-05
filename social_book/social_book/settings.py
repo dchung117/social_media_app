@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "core" # make core app visible to social_book project
 ]
 
 MIDDLEWARE = [
@@ -122,3 +123,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"] # directory where static files reside
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Media files (for users)
+MEDIA_URL = "media/"
+MEDIA_ROOT = Path(BASE_DIR) / "media"

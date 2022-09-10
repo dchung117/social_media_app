@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User, auth
+from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 
 from . import views, models
 
 # Create your views here.
+@login_required(login_url="signin")
 def index(request: HttpRequest) -> HttpResponse:
     return render(request, "index.html") # remder home page w/ index.html
 
@@ -46,3 +48,26 @@ def signup(request: HttpRequest) -> HttpResponse:
             return redirect("signup")
     else: # render signup page
         return render(request, "signup.html") # render sign-up page w/ signup.html
+
+def signin(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        # Get username and password
+        username = request.POST["username"]
+        password = request.POST["password"]
+
+        # Authenticate username
+        user = auth.authenticate(username=username, password=password)
+        if user is not None:
+            auth.login(request, user)
+            return redirect("/")
+        else:
+            messages.info(request, "Invalid username and/or password")
+            return redirect("signin")
+    return render(request, "signin.html")
+
+@login_required(login_url="signin")
+def logout(request: HttpRequest) -> HttpResponse:
+    # Authenticate logout
+    auth.logout(request)
+
+    return redirect("signin")

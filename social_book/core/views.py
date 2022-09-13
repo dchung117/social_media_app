@@ -35,14 +35,16 @@ def signup(request: HttpRequest) -> HttpResponse:
                 user = User.objects.create_user(username=username, email=email, password=password)
                 user.save()
 
-                # Log user in, redirect to settings page
+                # Log user in
+                user_login = auth.authenticate(username=username, password=password)
+                auth.login(request, user_login)
 
                 # Create profile model for user
                 user_model = User.objects.get(username=username) # get the saved user model
                 new_profile = models.Profile.objects.create(user=user_model, # create profile model using the saved user_model
                     id_user=user_model.id)
                 new_profile.save()
-                return redirect("signup")
+                return redirect("settings") # redirect to settings page
         else:
             messages.info(request, "Passwords do not match.")
             return redirect("signup")
@@ -71,3 +73,7 @@ def logout(request: HttpRequest) -> HttpResponse:
     auth.logout(request)
 
     return redirect("signin")
+
+@login_required(login_url="signin")
+def settings(request: HttpRequest) -> HttpResponse:
+    return render(request, "setting.html")

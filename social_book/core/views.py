@@ -9,7 +9,10 @@ from . import views, models
 # Create your views here.
 @login_required(login_url="signin")
 def index(request: HttpRequest) -> HttpResponse:
-    return render(request, "index.html") # remder home page w/ index.html
+    # Get user profile
+    user_profile = models.Profile.objects.get(user=request.user)
+
+    return render(request, "index.html", context={"user_profile": user_profile}) # remder home page w/ index.html
 
 def signup(request: HttpRequest) -> HttpResponse:
     # Save sign-up information
@@ -76,4 +79,27 @@ def logout(request: HttpRequest) -> HttpResponse:
 
 @login_required(login_url="signin")
 def settings(request: HttpRequest) -> HttpResponse:
-    return render(request, "setting.html")
+    # Get user profile
+    user_profile = models.Profile.objects.get(user=request.user)
+
+    # Get bio and location
+    if request.method == "POST":
+        # Check if profile was updated
+        if request.FILES.get("image") is None: # profile image
+            image = user_profile.profile_img # default image
+        else:
+            image = request.FILES.get("image")
+
+        bio = request.POST["bio"]
+        location = request.POST["location"]
+
+        user_profile.profile_img = image
+        user_profile.bio = bio
+        user_profile.location = location
+
+        # Save the user profile
+        user_profile.save()
+
+        return redirect("settings")
+
+    return render(request, "setting.html", context={"user_profile": user_profile})

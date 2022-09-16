@@ -1,3 +1,5 @@
+from datetime import datetime as dt
+import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -14,3 +16,14 @@ class Profile(models.Model): # User profile
 
     def __str__(self):
         return self.user.username
+
+class Post(models.Model): # User post
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    user = models.CharField(max_length=100) # user who posted
+    image = models.ImageField(upload_to="post_imgs")
+    caption = models.TextField()
+    created_at = models.DateTimeField(default=dt.now)
+    num_likes = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.user

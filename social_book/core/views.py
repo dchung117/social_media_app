@@ -9,7 +9,7 @@ from . import views, models
 # Create your views here.
 @login_required(login_url="signin")
 def index(request: HttpRequest) -> HttpResponse:
-    # Get user profile
+    # Get user profile object
     user_profile = models.Profile.objects.get(user=request.user)
 
     return render(request, "index.html", context={"user_profile": user_profile}) # remder home page w/ index.html
@@ -103,3 +103,23 @@ def settings(request: HttpRequest) -> HttpResponse:
         return redirect("settings")
 
     return render(request, "setting.html", context={"user_profile": user_profile})
+
+@login_required(login_url="signin")
+def upload(request: HttpRequest) -> HttpResponse:
+    # Check for post was uploaded
+    if request.method == "POST":
+        # Get user who made post
+        user = request.user.username
+        image = request.FILES.get("upload_img")
+        caption = request.POST.get("caption")
+
+        # Check if user uploaded empty post
+        if (image is None) and len(caption) == 0:
+            messages.info(request, "Please upload an image and/or write a caption.")
+            return redirect("/")
+
+        # Create a new post
+        user_post = models.Post.objects.create(user=user, image=image, caption=caption)
+        user_post.save()
+
+    return redirect("/")

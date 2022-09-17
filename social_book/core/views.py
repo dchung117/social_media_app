@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User, auth
@@ -12,7 +13,9 @@ def index(request: HttpRequest) -> HttpResponse:
     # Get user profile object
     user_profile = models.Profile.objects.get(user=request.user)
 
-    return render(request, "index.html", context={"user_profile": user_profile}) # remder home page w/ index.html
+    # Get the user's post feed list
+    post_feed = models.Post.objects.all()
+    return render(request, "index.html", context={"user_profile": user_profile, "post_feed": post_feed}) # remder home page w/ index.html
 
 def signup(request: HttpRequest) -> HttpResponse:
     # Save sign-up information

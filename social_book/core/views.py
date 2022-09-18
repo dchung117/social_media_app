@@ -126,3 +126,35 @@ def upload(request: HttpRequest) -> HttpResponse:
         user_post.save()
 
     return redirect("/")
+
+@login_required(login_url="signin")
+def like_post(request: HttpRequest) -> HttpResponse:
+    # Get username
+    username = request.user.username
+
+    # Get post from post_id
+    post_id = request.GET.get("post_id")
+    post = models.Post.objects.get(id=post_id)
+
+    # Check if user has liked this post
+    like_filter = models.LikePost.objects.filter(post_id=post_id, username=username).first()
+
+    if like_filter is None:
+        # Create like post
+        like_post = models.LikePost.objects.create(post_id=post_id, username=username)
+
+        # Update number of likes
+        post.num_likes = post.num_likes + 1
+
+        like_post.save()
+        post.save()
+    else:
+        # Remove like post
+        like_filter.delete()
+
+        # Update number of likes
+        post.num_likes = post.num_likes - 1
+        post.save()
+
+    return redirect("/")
+

@@ -117,8 +117,8 @@ def upload(request: HttpRequest) -> HttpResponse:
         caption = request.POST.get("caption")
 
         # Check if user uploaded empty post
-        if (image is None) and len(caption) == 0:
-            messages.info(request, "Please upload an image and/or write a caption.")
+        if (image is None) or len(caption) == 0:
+            messages.info(request, "Please upload an image and write a caption.")
             return redirect("/")
 
         # Create a new post
@@ -157,4 +157,22 @@ def like_post(request: HttpRequest) -> HttpResponse:
         post.save()
 
     return redirect("/")
+
+@login_required(login_url="signin")
+def profile(request: HttpRequest, pk: str) -> HttpResponse:
+    # Get user object
+    user_object = User.objects.get(username=pk)
+    user_profile = models.Profile.objects.get(user=user_object)
+
+    # Get user posts
+    user_posts = models.Post.objects.filter(user=pk)
+    num_user_posts = len(user_posts)
+
+    context = {
+        "object": user_object,
+        "profile": user_profile,
+        "posts": user_posts,
+        "num_posts": num_user_posts
+    }
+    return render(request, "profile.html", context=context)
 

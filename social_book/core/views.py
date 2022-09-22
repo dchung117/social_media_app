@@ -160,7 +160,10 @@ def like_post(request: HttpRequest) -> HttpResponse:
 
 @login_required(login_url="signin")
 def profile(request: HttpRequest, pk: str) -> HttpResponse:
-    # Get user object
+    # Get viewing user
+    viewing_user = User.objects.get(username=request.user)
+
+    # Get user profile object
     user_object = User.objects.get(username=pk)
     user_profile = models.Profile.objects.get(user=user_object)
 
@@ -168,11 +171,45 @@ def profile(request: HttpRequest, pk: str) -> HttpResponse:
     user_posts = models.Post.objects.filter(user=pk)
     num_user_posts = len(user_posts)
 
+    # Get user followers
+    user_followers = models.Followers.objects.filter(user=pk)
+    num_user_followers = len(user_followers)
+
+    # Get user following
+    user_following = models.Followers.objects.filter(follower=pk)
+    num_user_following = len(user_following)
+
+    # Check if viewing user is following profile user
+    if models.Followers.objects.filter(follower=viewing_user, user=pk).first():
+        is_following = True
+    else:
+        is_following = False
     context = {
         "object": user_object,
         "profile": user_profile,
         "posts": user_posts,
-        "num_posts": num_user_posts
+        "num_posts": num_user_posts,
+        "num_followers": num_user_followers,
+        "num_following": num_user_following,
+        "is_following": is_following
     }
     return render(request, "profile.html", context=context)
 
+@login_required(login_url="signin")
+def follow(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        # Get follower and user names
+        follower = request.POST["follower"]
+        user = request.POST["user"]
+
+        # Determine if follower is already following user
+        user_follower = models.Followers.objects.filter(user=user, follower=follower).first()
+
+        # Toggle follow/unfollow
+        if user_follower is None: # add follower
+            new_follower = models.Followers.objects.create(user=user, follower=follower)
+            new_follower.save()
+        else:
+            user_follower = models.Followers.objects.get(user=user, follower=follower)
+            user_follower.delete()
+    return redirect(f"/profile/{user}")

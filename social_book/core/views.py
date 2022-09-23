@@ -13,6 +13,9 @@ def index(request: HttpRequest) -> HttpResponse:
     # Get user profile object
     user_profile = models.Profile.objects.get(user=request.user)
 
+    # todo: get all users that logged in user is following
+    # todo: only show the posts by followed users
+
     # Get the user's post feed list
     post_feed = models.Post.objects.all()
     return render(request, "index.html", context={"user_profile": user_profile, "post_feed": post_feed}) # remder home page w/ index.html
@@ -181,9 +184,10 @@ def profile(request: HttpRequest, pk: str) -> HttpResponse:
 
     # Check if viewing user is following profile user
     if models.Followers.objects.filter(follower=viewing_user, user=pk).first():
-        is_following = True
+        follow_button = "Unfollow"
     else:
-        is_following = False
+        follow_button = "Follow"
+
     context = {
         "object": user_object,
         "profile": user_profile,
@@ -191,7 +195,7 @@ def profile(request: HttpRequest, pk: str) -> HttpResponse:
         "num_posts": num_user_posts,
         "num_followers": num_user_followers,
         "num_following": num_user_following,
-        "is_following": is_following
+        "follow_button": follow_button
     }
     return render(request, "profile.html", context=context)
 

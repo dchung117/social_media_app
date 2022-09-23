@@ -38,3 +38,6 @@ class LikePost(models.Model): # Liked user post
 class Followers(models.Model): # followers for a user
     user = models.CharField(max_length=100)
     follower = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.user

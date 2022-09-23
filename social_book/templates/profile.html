@@ -49,15 +49,12 @@
 					<!--- when follow is pressed, the viewing user and the user's profile is sent to determine whether to follow/unfollow-->
 					<input type="hidden" value="{{object.username}}" name="user" />
 					{% if user.username != object.username %}
-					{% if is_following %}
-					<!--- show unfollow if already following-->
+					<!--- show follow button --->
 					<a title="" data-ripple=""><button type="submit"
-							style="background-color: #ffc0cb; border: #ffc0cb;">Unfollow</button></a>
+							style="background-color: #ffc0cb; border: #ffc0cb;">{{follow_button}}</button></a>
 					{% else %}
-					<!--- show follow if not following yet-->
-					<a title="" data-ripple=""><button type="submit"
-							style="background-color: #ffc0cb; border: #ffc0cb;">Follow</button></a>
-					{% endif %}
+					<!--- link back to account settings --->
+					<a href="/settings" title="" data-ripple="">Account Settings</a>
 					{% endif %}
 				</div>
 			</form>

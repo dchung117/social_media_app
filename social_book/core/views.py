@@ -1,3 +1,5 @@
+from itertools import chain
+
 from pyexpat import model
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -13,11 +15,15 @@ def index(request: HttpRequest) -> HttpResponse:
     # Get user profile object
     user_profile = models.Profile.objects.get(user=request.user)
 
-    # todo: get all users that logged in user is following
-    # todo: only show the posts by followed users
+    # Get all users that logged in user is following
+    user_followers = [f.user for f in models.Followers.objects.filter(follower=request.user.username)]
 
     # Get the user's post feed list
-    post_feed = models.Post.objects.all()
+    posts = []
+    for u in user_followers:
+        u_posts = models.Post.objects.filter(user=u)
+        posts.append(u_posts)
+    post_feed = list(chain(*posts))
     return render(request, "index.html", context={"user_profile": user_profile, "post_feed": post_feed}) # remder home page w/ index.html
 
 def signup(request: HttpRequest) -> HttpResponse:

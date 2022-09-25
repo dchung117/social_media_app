@@ -223,3 +223,28 @@ def follow(request: HttpRequest) -> HttpResponse:
             user_follower = models.Followers.objects.get(user=user, follower=follower)
             user_follower.delete()
     return redirect(f"/profile/{user}")
+
+@login_required(login_url="signin")
+def search(request: HttpRequest) -> HttpResponse:
+    # Get search user's profile
+    user_object = User.objects.get(username=request.user)
+    user_profile = models.Profile.objects.get(user=user_object)
+    if request.method == "POST":
+        # Get searched username
+        search_username = request.POST["search_user"]
+
+        # Get all profiles that match username
+        search_users = User.objects.filter(username__icontains=search_username)
+
+        search_profiles = []
+        for su in search_users:
+            su_profile = models.Profile.objects.filter(id_user=su.id)
+            search_profiles.append(su_profile)
+        search_profiles = list(chain(*search_profiles))
+
+        # Display search results
+        context = {"user":user_object,
+            "user_profile": user_profile,
+            "search_profiles": search_profiles
+            }
+        return render(request, "search.html", context=context)

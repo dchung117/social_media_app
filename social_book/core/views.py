@@ -1,3 +1,4 @@
+import random
 from itertools import chain
 
 from pyexpat import model
@@ -15,8 +16,24 @@ def index(request: HttpRequest) -> HttpResponse:
     # Get user profile object
     user_profile = models.Profile.objects.get(user=request.user)
 
+    # Get all users on platform
+    all_users = User.objects.all()
+
     # Get all users that logged in user is following
     user_followers = [f.user for f in models.Followers.objects.filter(follower=request.user.username)]
+
+    # Determine user suggestions (i.e. people that user is not following)
+    user_suggestions = []
+    for user in all_users:
+        # Get profile of non-following (exclude current user)
+        if (user.username not in user_followers) and (user.username != request.user.username):
+            profile = models.Profile.objects.filter(user=user)
+            if profile is not None:
+                user_suggestions.append(profile)
+    user_suggestions = list(chain(*user_suggestions))
+
+    # Shuffle user suggestions
+    random.shuffle(user_suggestions)
 
     # Get the user's post feed list
     posts = []
@@ -24,7 +41,8 @@ def index(request: HttpRequest) -> HttpResponse:
         u_posts = models.Post.objects.filter(user=u)
         posts.append(u_posts)
     post_feed = list(chain(*posts))
-    return render(request, "index.html", context={"user_profile": user_profile, "post_feed": post_feed}) # remder home page w/ index.html
+
+    return render(request, "index.html", context={"user_profile": user_profile, "post_feed": post_feed, "user_suggestions": user_suggestions}) # remder home page w/ index.html
 
 def signup(request: HttpRequest) -> HttpResponse:
     # Save sign-up information
